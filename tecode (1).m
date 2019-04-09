@@ -1,0 +1,61 @@
+%
+ 
+dur=input('Recording time?');
+% Record your voice for 5 seconds.
+disp('Get ready');
+pause(2);
+disp('Start speaking.');
+recObj = audiorecorder;
+recordblocking(recObj, dur);
+disp('End of Recording.');
+
+% Play back the recording.
+% play(recObj);
+
+% Store data in double-precision array.
+myRecording = getaudiodata(recObj);
+fs=recObj.SampleRate;
+save myRecording;
+load myRecording.mat
+% Write audio in a file 
+pr = 'myDataFile.wav';
+audiowrite(pr,myRecording,fs);
+disp('i M HERE');
+fftout=fft(myRecording);
+%PSD
+p=periodogram(myRecording);
+
+[r,c]=size(fftout);
+energy=0.0;
+for i=1:r
+    energy=energy+real(fftout(i,1))^(2);
+end
+h=hamming(r);
+y_spectrum=h.*fftout;
+y=ifft(y_spectrum);
+hold on;
+%Original audio
+subplot(3,2,1);
+plot(myRecording);
+title('Original recording');
+%FFT of the audio
+subplot(3,2,2);
+plot(real(fftout));
+title('FFT of recoding');
+subplot(3,2,3);
+plot(p);
+title('PSD');
+%Hamming
+subplot(3,2,4);
+plot(h);
+title('Hamming Window');
+%Output after convolution
+subplot(3,2,5);
+plot(real(y_spectrum));
+title('FFT of output');
+%Final output
+subplot(3,2,6);
+plot(real(y));
+title('Output Signal');
+pr2 = [ 'myDataFileafterfilter.wav' ];
+audiowrite(pr2,y,fs);
